@@ -1,6 +1,8 @@
 __pycache__/
+/share/
 /bin
 /include
 /lib*
 /models/*.gguf
 /models/.cache
+/logs/

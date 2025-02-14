@@ -25,13 +25,7 @@ def get_llm(model: str, embed=False):
     )
 
 def get_content(response):
-    return "\t\n".join(response['choices'][0]['message']['content'].split("\n"))
-
-
-# Load models
-llm_llama = get_llm("Llama")
-llm_aya = get_llm("Aya")
-
+    return response['choices'][0]['message']['content']
 
 def simple_llm_prompting(llm: dict[str, Llama]):
     print("\n--- Simple Questions ---")
@@ -102,19 +96,20 @@ def alternative_responses(llm: Llama):
             _print("Llama", "English", get_content(response))
 
 def embedding_similarity(llm: Llama):
-    # Bonus: Embeddings and cosine similarity
     sentences = [
-        "Artificial Intelligence is transforming the world.",
-        "Greece belongs to Greeks.",
-        "Greece belongs to Greeks.",
-        "Deep learning is part of Artificial Intelligence.",
+        "Artificial Intelligence is transforming the job market.",
+        "Aristotle was a Greek philosopher.",
+        "Greece is known for it's philosophers.",
+        "Deep learning is used in image recognition.",
         "The wine capital of France is Bordeaux.",
     ]
 
-    # Use 'prompt' instead of 'input'
-    embeds = llm.create_embedding(input=sentences)["data"]
-
-    embeddings = [np.array(embed["embedding"], dtype=np.float32).mean(axis=0) for embed in embeds]
+    embeds = [llm.create_embedding(input=s)["data"][0] for s in sentences]
+    embeddings = [np.array(embed["embedding"], dtype=np.float32).flatten() for embed in embeds]
+    
+    # Pad embeddings to the same length
+    max_len = max([len(embed) for embed in embeddings])
+    embeddings = [np.pad(embed, (0, max_len - len(embed)), mode='constant') for embed in embeddings]
     
     print([len(embed) for embed in embeddings])
     
@@ -128,16 +123,19 @@ def embedding_similarity(llm: Llama):
                       index=[f"Sentence {i+1}" for i in range(size)])
     print(df.to_string())
 
-
-llms={"llama": llm_llama, "aya": llm_aya}
-if args["mode"] == 1:
-    simple_llm_prompting(llms)
-elif args["mode"] == 2:
-    variety_llm_prompting(llms)
-elif args["mode"] == 3:
-    alternative_responses(llm_llama)
-elif args["mode"] == 4:
-    embedding_similarity(get_llm("Aya", embed=True))
-else:
-    print("Invalid mode. Please choose 1, 2, 3, or 4.")
-    exit(1)
+if __name__ == "__main__":
+    # Load models
+    llama = get_llm("Llama")
+    aya = get_llm("Aya")
+    llms={"llama": llama, "aya": aya}
+    if args["mode"] == 1:
+        simple_llm_prompting(llms)
+    elif args["mode"] == 2:
+        variety_llm_prompting(llms)
+    elif args["mode"] == 3:
+        alternative_responses(llama)
+    elif args["mode"] == 4:
+        embedding_similarity(get_llm("Aya", embed=True))
+    else:
+        print("Invalid mode. Please choose 1, 2, 3, or 4.")
+        exit(1)
