@@ -1,0 +1,5 @@
+llama-cpp-python
+scikit-learn
+numpy
+huggingface_hub
+pandas
