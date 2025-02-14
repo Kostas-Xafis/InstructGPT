@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from llama_cpp import Llama
+from get_model import get_model
 from parse_args import parse_args
 from sklearn.metrics.pairwise import cosine_similarity
 args = parse_args()
@@ -15,13 +16,8 @@ def _print(llm:str, lang:str, *pargs):
             print(f"{llm} assistant ({lang}):", *pargs, file=f)
 
 def get_llm(model: str, embed=False):
-    if model == "Llama":
-        model = "Llama-3.2-3B-Instruct.Q4_K_M.gguf"
-    elif model == "Aya":
-        model = "aya-expanse-8b-Q4_K_M.gguf"
-    model_path = "models/" + model
     return Llama(
-        model_path=model_path,
+        model_path=get_model(model),
         n_ctx=256,
         n_threads=12,
         verbose=False,
