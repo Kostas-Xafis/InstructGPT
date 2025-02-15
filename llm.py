@@ -98,21 +98,21 @@ def alternative_responses(llm: Llama):
 def embedding_similarity(llm: Llama):
     sentences = [
         "Artificial Intelligence is transforming the job market.",
-        "Aristotle was a Greek philosopher.",
-        "Greece is known for it's philosophers.",
+        "A car crash can be a traumatic experience.",
+        "Alchohol is bad for your health.",
         "Deep learning is used in image recognition.",
-        "The wine capital of France is Bordeaux.",
+        "Greece is known for it's delicious food.",
     ]
 
     embeds = [llm.create_embedding(input=s)["data"][0] for s in sentences]
     embeddings = [np.array(embed["embedding"], dtype=np.float32).flatten() for embed in embeds]
     
-    # Pad embeddings to the same length
+    # Pad embeddings with mean to the same length
     max_len = max([len(embed) for embed in embeddings])
-    embeddings = [np.pad(embed, (0, max_len - len(embed)), mode='constant') for embed in embeddings]
-    
-    print([len(embed) for embed in embeddings])
-    
+    embeddings = [np.pad(embed, (0, max_len - len(embed)), mode='mean') for embed in embeddings]
+
+    # print([len(embed) for embed in embeddings])
+
     # Compute cosine similarity matrix
     similarity_matrix = cosine_similarity(np.array(embeddings))
 
@@ -122,6 +122,7 @@ def embedding_similarity(llm: Llama):
                       columns=[f"Sentence {i+1}" for i in range(size)], 
                       index=[f"Sentence {i+1}" for i in range(size)])
     print(df.to_string())
+
 
 if __name__ == "__main__":
     # Load models
